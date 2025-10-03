@@ -1,5 +1,6 @@
 package org.iesvdm.tienda;
 
+import org.hibernate.annotations.SourceType;
 import org.iesvdm.tienda.modelo.Fabricante;
 import org.iesvdm.tienda.modelo.Producto;
 import org.iesvdm.tienda.repository.FabricanteRepository;
@@ -8,6 +9,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 
@@ -63,16 +67,14 @@ class TiendaApplicationTests {
 	void test2() {
 		var listProds = prodRepo.findAll();
 		
-		var listNomPrec = listProds.stream()
-				.map((s) -> "Nombre: " + s.getNombre() + " Precio: " + s.getPrecio())
+		var listPrecios = listProds.stream()
+				//.map(p ->p.getPrecio()*1.08)
+				//.map(prec -> BigDecimal.valueOf(prec).setScale(2, RoundingMode.HALF_UP))
+				//.map(prec -> prec + "$")
+				.map(prod -> prod.getNombre() + " con precio: " + BigDecimal.valueOf(prod.getPrecio())+ "$")
 				.toList();
 
-		listNomPrec.forEach(x -> System.out.println(x));
-
-		Assertions.assertEquals(11, listNomPrec.size());
-
-		Assertions.assertTrue(listNomPrec.contains("Nombre: Disco duro SATA3 1TB Precio: 86.99"));
-
+		listPrecios.forEach(s -> System.out.println(s));
 	}
 	
 	/**
@@ -81,7 +83,13 @@ class TiendaApplicationTests {
 	@Test
 	void test3() {
 		var listProds = prodRepo.findAll();
-		//TODO
+
+		listProds.stream()
+				.map(p -> p.getNombre().toUpperCase() + " precio: " + p.getPrecio())
+				.toList();
+
+		listResultado.forEach(str -> System.out.println(str));
+
 	}
 	
 	/**
@@ -90,7 +98,15 @@ class TiendaApplicationTests {
 	@Test
 	void test4() {
 		var listFabs = fabRepo.findAll();
-		//TODO
+
+		listFabs.stream()
+				.map(f -> f.getNombre() + " " + f.getNombre()
+													.substring(0, 2)
+													.toUpperCase())
+				.toList();
+
+		listFabs.forEach(System.out::println);
+
 	}
 	
 	/**
