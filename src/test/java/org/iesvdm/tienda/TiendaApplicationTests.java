@@ -12,7 +12,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Comparator;
 import java.util.List;
+
+import static java.util.Collections.reverseOrder;
+import static java.util.Comparator.comparing;
 
 
 @SpringBootTest
@@ -55,7 +59,7 @@ class TiendaApplicationTests {
 		var listProds = prodRepo.findAll();
 
 		listProds.stream()
-				.forEach((s) -> System.out.println("Nombre: " + s.getNombre() + " Precio: " + s.getPrecio()));;
+				.forEach((s) -> System.out.println("Nombre: " + s.getNombre() + " Precio: " + s.getPrecio()));
 
 	}
 	
@@ -88,7 +92,7 @@ class TiendaApplicationTests {
 				.map(p -> p.getNombre().toUpperCase() + " precio: " + p.getPrecio())
 				.toList();
 
-		listResultado.forEach(str -> System.out.println(str));
+		listProds.forEach(str -> System.out.println(str));
 
 	}
 	
@@ -99,13 +103,13 @@ class TiendaApplicationTests {
 	void test4() {
 		var listFabs = fabRepo.findAll();
 
-		listFabs.stream()
+		var listResu = listFabs.stream()
 				.map(f -> f.getNombre() + " " + f.getNombre()
 													.substring(0, 2)
 													.toUpperCase())
 				.toList();
 
-		listFabs.forEach(System.out::println);
+		listResu.forEach(System.out::println);
 
 	}
 	
@@ -115,7 +119,14 @@ class TiendaApplicationTests {
 	@Test
 	void test5() {
 		var listFabs = fabRepo.findAll();
-		//TODO		
+
+		var codigosConProductos = listFabs.stream()
+				.filter(fab -> !fab.getProductos().isEmpty()) // solo fabricantes con productos
+				.map(Fabricante::getCodigo) // obtenemos solo el código
+				.toList();
+
+		System.out.println(codigosConProductos);
+
 	}
 	
 	/**
@@ -124,7 +135,14 @@ class TiendaApplicationTests {
 	@Test
 	void test6() {
 		var listFabs = fabRepo.findAll();
-		//TODO
+		
+		var resultado = listFabs.stream()
+				.sorted(comparing(Fabricante::getNombre).reversed())
+				.map(x -> x.getNombre())
+				.toList();
+
+		resultado.stream().forEach(System.out::println);
+
 	}
 	
 	/**
@@ -133,7 +151,17 @@ class TiendaApplicationTests {
 	@Test
 	void test7() {
 		var listProds = prodRepo.findAll();
-		//TODO
+
+        var resultado = listProds.stream()
+                                .sorted(comparing((Producto p) -> p.getNombre())
+                                        .thenComparing((Producto p) -> p.getPrecio(), reverseOrder()))
+                                .map(p -> p.getNombre() + " " + p.getPrecio())
+                                .toList();
+
+        resultado.stream().forEach(System.out::println);
+
+        Assertions.assertEquals(11, resultado.size());
+
 	}
 	
 	/**
@@ -142,7 +170,16 @@ class TiendaApplicationTests {
 	@Test
 	void test8() {
 		var listFabs = fabRepo.findAll();
-		//TODO
+
+        var resultado = listFabs.stream()
+                .limit(5)
+                .map(x -> x.getNombre())
+                .toList();
+
+        resultado.stream().forEach(System.out::println);
+
+        Assertions.assertEquals(5, resultado.size());
+
 	}
 	
 	/**
@@ -151,7 +188,17 @@ class TiendaApplicationTests {
 	@Test
 	void test9() {
 		var listFabs = fabRepo.findAll();
-		//TODO		
+
+        var resultado= listFabs.stream()
+                .skip(3)
+                .limit(2)
+                .map(x -> x.getNombre())
+                .toList();
+
+        resultado.stream().forEach(System.out::println);
+
+        Assertions.assertEquals(2, resultado.size());
+
 	}
 	
 	/**
@@ -160,7 +207,17 @@ class TiendaApplicationTests {
 	@Test
 	void test10() {
 		var listProds = prodRepo.findAll();
-		//TODO
+
+        var resultado = listProds.stream()
+                .sorted(comparing(Producto::getPrecio))
+                .limit(1)
+                .map(x -> "Nombre: " + x.getNombre() + ", Precio: " + x.getPrecio())
+                .toList();
+
+        resultado.forEach(System.out::println);
+
+        Assertions.assertEquals(1, resultado.size());
+
 	}
 	
 	/**
@@ -169,8 +226,18 @@ class TiendaApplicationTests {
 	@Test
 	void test11() {
 		var listProds = prodRepo.findAll();
-		//TODO
-	}
+
+        var resultado = listProds.stream()
+                .sorted(comparing(Producto::getPrecio, reverseOrder()))
+                .limit(1)
+                .map(x -> "Nombre: " + x.getNombre() + ", Precio: " + x.getPrecio())
+                .toList();
+
+        resultado.forEach(System.out::println);
+
+        Assertions.assertEquals(1, resultado.size());
+
+    }
 	
 	/**
 	 * 12. Lista el nombre de todos los productos del fabricante cuyo código de fabricante es igual a 2.
@@ -179,7 +246,16 @@ class TiendaApplicationTests {
 	@Test
 	void test12() {
 		var listProds = prodRepo.findAll();
-		//TODO
+
+        var resultado = listProds.stream()
+                .filter(x -> x.getFabricante().getCodigo() == 2)
+                .map(x -> x.getNombre())
+                .toList();
+
+        resultado.stream().forEach(System.out::println);
+
+        Assertions.assertEquals(2, resultado.size());
+
 	}
 	
 	/**
@@ -188,7 +264,16 @@ class TiendaApplicationTests {
 	@Test
 	void test13() {
 		var listProds = prodRepo.findAll();
-		//TODO
+
+        var resultado = listProds.stream()
+                .filter(x -> x.getPrecio() < 150)
+                .map(x -> x.getNombre())
+                .toList();
+
+        resultado.stream().forEach(System.out::println);
+
+        Assertions.assertEquals(3, resultado.size());
+
 	}
 	
 	/**
