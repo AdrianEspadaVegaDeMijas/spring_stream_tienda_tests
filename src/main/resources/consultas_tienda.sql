@@ -51,12 +51,25 @@
 
 -- 13. Lista el nombre de los productos que tienen un precio menor o igual a 120€.
 
-    SELECT
+    SELECT prd.nombre FROM producto prd WHERE prd.precio <= 120;
 
 -- 14. Lista los productos que tienen un precio mayor o igual a 400€.
+
+    SELECT prd.nombre FROM producto prd WHERE prd.precio >= 400;
+
 -- 15. Lista todos los productos que tengan un precio entre 80€ y 300€.
+
+    SELECT prd.nombre FROM producto prd WHERE prd.precio  >= 80 && prd.precio <= 300;
+
+
 -- 16. Lista todos los productos que tengan un precio mayor que 200€ y que el código de fabricante sea igual a 6.
+
+    SELECT prd.nombre FROM producto prd WHERE prd.precio  > 200 && prd.codigo_fabricante = 6;
+
 -- 17. Lista todos los productos donde el código de fabricante sea 1, 3 o 5 utilizando un Set de codigos de fabricantes para filtrar.
+
+    SELECT prd.nombre FROM producto prd WHERE prd.codigo_fabricante IN (1, 3, 5);;
+
 -- 18. Lista el nombre y el precio de los productos en céntimos.
 -- 19. Lista los nombres de los fabricantes cuyo nombre empiece por la letra S
 -- 20. Devuelve una lista con los productos que contienen la cadena Portátil en el nombre.
