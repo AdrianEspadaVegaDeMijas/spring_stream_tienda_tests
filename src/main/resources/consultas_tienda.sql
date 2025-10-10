@@ -71,14 +71,50 @@
     SELECT prd.nombre FROM producto prd WHERE prd.codigo_fabricante IN (1, 3, 5);;
 
 -- 18. Lista el nombre y el precio de los productos en céntimos.
+
+    SELECT prod.nombre, prod.precio * 100 FROM producto prod;
+
 -- 19. Lista los nombres de los fabricantes cuyo nombre empiece por la letra S
+
+    SELECT fab.nombre FROM fabricante fab WHERE fab.nombre LIKE 'S%';
+
 -- 20. Devuelve una lista con los productos que contienen la cadena Portátil en el nombre.
+
+    SELECT prd.nombre FROM producto prd WHERE prd.nombre LIKE '%Portátil%';
+
 -- 21. Devuelve una lista con el nombre de todos los productos que contienen la cadena Monitor en el nombre y tienen un precio inferior a 215 €.
+
+        SELECT prd.nombre FROM producto prd WHERE prd.nombre LIKE '%Monitor%' AND prd.precio < 215;
+
+
 -- 22. Lista el nombre y el precio de todos los productos que tengan un precio mayor o igual a 180€. Ordene el resultado en primer lugar por el precio (en orden descendente) y en segundo lugar por el nombre (en orden ascendente).
+
+    SELECT prd.nombre, prd.precio FROM producto prd WHERE prd.precio >= 180 ORDER BY prd.precio DESC, prd.nombre ASC;
+
 -- 23. Devuelve una lista con el nombre del producto, precio y nombre de fabricante de todos los productos de la base de datos. Ordene el resultado por el nombre del fabricante, por orden alfabético.
+
+    SELECT prd.nombre, prd.precio, fbr.nombre  FROM producto prd JOIN fabricante fbr ON prd.codigo_fabricante = fbr.codigo ORDER BY fbr.nombre ASC;
+
 -- 24. Devuelve el nombre del producto, su precio y el nombre de su fabricante, del producto más caro.
+
+    SELECT prd.nombre, prd.precio, fbr.nombre  FROM producto prd JOIN fabricante fbr ON prd.codigo_fabricante = fbr.codigo ORDER BY prd.precio DESC LIMIT 1;
+
 -- 25. Devuelve una lista de todos los productos del fabricante Crucial que tengan un precio mayor que 200€.
+
+    SELECT prd.nombre, prd.precio, fbr.nombre  
+    FROM producto prd 
+    JOIN fabricante fbr 
+    ON prd.codigo_fabricante = fbr.codigo
+    WHERE fbr.nombre = 'Crucial' AND prd.precio > 200;
+
 -- 26. Devuelve un listado con todos los productos de los fabricantes Asus, Hewlett-Packard y Seagate.
+
+    SELECT prd.nombre, prd.precio, fbr.nombre  
+    FROM producto prd 
+    JOIN fabricante fbr 
+    ON prd.codigo_fabricante = fbr.codigo
+    WHERE fbr.nombre IN ('Asus', 'Hewlett-Packard', 'Seagate');
+
 -- 27. Devuelve un listado con el nombre de producto, precio y nombre de fabricante, de todos los productos que tengan un precio mayor o igual a 180€. Ordene el resultado en primer lugar por el precio (en orden descendente) y en segundo lugar por el nombre.
 -- 28. Devuelve un listado de los nombres fabricantes que existen en la base de datos, junto con los nombres productos que tiene cada uno de ellos. El listado deberá mostrar también aquellos fabricantes que no tienen productos asociados.
 -- 29. Devuelve un listado donde sólo aparezcan aquellos fabricantes que no tienen ningún producto asociado.
