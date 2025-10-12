@@ -12,10 +12,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.reverseOrder;
 import static java.util.Comparator.comparing;
@@ -551,7 +553,19 @@ Monitor 27 LED Full HD |199.25190000000003|Asus
 	@Test
 	void test27() {
 		var listProds = prodRepo.findAll();
-		//TODO
+		
+		var resultado = listProds.stream()
+								.filter(x -> x.getPrecio() >= 180)
+								.sorted(Comparator
+									.comparing(Producto::getPrecio).reversed()
+									.thenComparing(Producto::getNombre))
+								.map(x -> x.getNombre() + "| " + x.getPrecio() + " | " + x.getFabricante().getNombre())
+								.toList();
+
+		resultado.stream().forEach(System.out::println);
+
+		Assertions.assertEquals(7, resultado.size());
+
 	}
 	
 	/**
@@ -611,7 +625,25 @@ Fabricante: Xiaomi
 	@Test
 	void test28() {
 		var listFabs = fabRepo.findAll();
-		//TODO
+		
+		var resultado = listFabs.stream()
+								.map(x -> {
+										String productos = x.getProductos().stream()
+										.map(p -> "\t\t" + p.getNombre())
+										.collect(Collectors.joining("\n"));
+
+										if (productos.isEmpty()) {
+											productos = "\t\t";
+										}
+
+										return "Fabricante: " + x.getNombre() + "\n\n\t\tProductos:\n" + productos + "\n";
+								})
+								.toList();
+
+		resultado.stream().forEach(System.out::println);
+
+		Assertions.assertEquals(9, resultado.size());
+
 	}
 	
 	/**
@@ -620,7 +652,16 @@ Fabricante: Xiaomi
 	@Test
 	void test29() {
 		var listFabs = fabRepo.findAll();
-		//TODO
+		
+		var resultado = listFabs.stream()
+								.filter(x -> x.getProductos().isEmpty())
+								.map(x -> "Fabricante: " + x.getNombre())
+								.toList();
+
+		resultado.stream().forEach(System.out::println);
+
+		Assertions.assertEquals(2, resultado.size());
+
 	}
 	
 	/**
@@ -629,7 +670,14 @@ Fabricante: Xiaomi
 	@Test
 	void test30() {
 		var listProds = prodRepo.findAll();
-		//TODO
+		
+		var resultado = listProds.stream()
+								.count();
+
+		System.out.println("Número total de productos: " + resultado);
+
+		Assertions.assertEquals(11, resultado);
+
 	}
 
 	
@@ -639,7 +687,16 @@ Fabricante: Xiaomi
 	@Test
 	void test31() {
 		var listProds = prodRepo.findAll();
-		//TODO
+		
+		var resultado = listProds.stream()
+								.map(Producto::getFabricante)
+								.distinct()
+								.count();
+
+		System.out.println("Número total de fabricantes: " + resultado);
+
+		Assertions.assertEquals(7, resultado);
+
 	}
 	
 	/**
@@ -648,7 +705,17 @@ Fabricante: Xiaomi
 	@Test
 	void test32() {
 		var listProds = prodRepo.findAll();
-		//TODO
+		
+		var resultado = listProds.stream()
+								.mapToDouble(Producto::getPrecio)
+								.average();
+
+		
+		System.out.println("Media de predios: " + resultado);
+
+		Assertions.assertTrue(resultado.isPresent());
+		Assertions.assertEquals(271.7236363636364, resultado.getAsDouble());
+
 	}
 	
 	/**
@@ -657,7 +724,14 @@ Fabricante: Xiaomi
 	@Test
 	void test33() {
 		var listProds = prodRepo.findAll();
-		//TODO
+		
+		var resultado = listProds.stream()
+								.min(Comparator.comparing(Producto::getPrecio));
+
+		resultado.ifPresent(p -> System.out.println("Producto más barato: " + p.getNombre() + " - Precio: " + p.getPrecio()));
+
+		Assertions.assertTrue(resultado.isPresent());
+
 	}
 	
 	/**
@@ -666,7 +740,15 @@ Fabricante: Xiaomi
 	@Test
 	void test34() {
 		var listProds = prodRepo.findAll();
-		//TODO	
+		
+		var resultado = listProds.stream()
+								.mapToDouble(Producto::getPrecio)
+								.sum();
+
+		System.out.println("Suma de precios: " + resultado);
+
+		Assertions.assertEquals(2988.96, resultado);
+
 	}
 	
 	/**
@@ -675,7 +757,16 @@ Fabricante: Xiaomi
 	@Test
 	void test35() {
 		var listProds = prodRepo.findAll();
-		//TODO		
+		
+		var resultado = listProds.stream()
+								.filter(x -> x.getFabricante().getNombre().equals("Asus"))
+								.mapToDouble(Producto::getPrecio)
+								.sum();
+
+		System.out.println("Suma de precios de fabricante Asus: " + resultado);
+
+		Assertions.assertEquals(447.99, resultado);
+
 	}
 	
 	/**
@@ -684,7 +775,17 @@ Fabricante: Xiaomi
 	@Test
 	void test36() {
 		var listProds = prodRepo.findAll();
-		//TODO
+		
+		var resultado = listProds.stream()
+								.filter(x -> x.getFabricante().getNombre().equals("Asus"))
+								.mapToDouble(Producto::getPrecio)
+								.average();
+
+		System.out.println("Media de precios de fabricante Asus: " + resultado);
+
+		Assertions.assertTrue(resultado.isPresent());
+		Assertions.assertEquals(223.995, resultado.getAsDouble());
+		
 	}
 	
 	
@@ -695,7 +796,46 @@ Fabricante: Xiaomi
 	@Test
 	void test37() {
 		var listProds = prodRepo.findAll();
-		//TODO
+	/* 	
+		var resultado = listProds.stream()
+			.filter(p -> "Crucial".equals(p.getFabricante().getNombre()))
+			.mapToDouble(Producto::getPrecio)
+			.summaryStatistics();
+
+
+       System.out.println(resultado);
+*/
+        double [] estadisticas = listProds.stream()
+                .filter(p->p.getFabricante().getNombre().equalsIgnoreCase("Crucial"))
+                .map(producto -> new double[]{producto.getPrecio(),producto.getPrecio(),producto.getPrecio(),0})
+                .reduce(new double[]{Double.MAX_VALUE, Double.MIN_VALUE, 0.0, 0.0},(a,b) -> {
+                    double minAct=0.0;
+                    double maxAct = 0.0;
+                    double sumAct=0.0;
+                    double minAnt = (Double) a[0];
+                    double countAct = 0.0;
+                    if((Double)b[0]<minAnt){
+                    minAct= (Double)b[0] ;
+                    }else{
+                        minAct=minAnt;
+                    }
+
+                    double maxAnt = (Double) a[1];
+                    if((Double)b[1]>maxAnt){
+                        maxAct=(Double)b[1];
+
+                    }
+                    double sumAnt = (Double) a[2];
+                    sumAct=sumAnt+b[2];
+                    double countAnt = (Double) a[3];
+                     countAct = countAnt + 1;
+
+                     return new double[]{minAct,maxAct,sumAct,countAct};
+                });
+        System.out.println(Arrays.toString(estadisticas));
+		
+
+
 	}
 	
 	/**
