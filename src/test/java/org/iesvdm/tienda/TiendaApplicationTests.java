@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Collections.reverseOrder;
 import static java.util.Comparator.comparing;
@@ -943,5 +944,16 @@ Hewlett-Packard              2
 		var listFabs = fabRepo.findAll();
 		//TODO
 	}
+
+	@Test
+	void testJoining() {
+
+		String hola = Stream.of("Hola", "mundo")
+				.collect(Collectors.joining(", ", "> ", "! "));
+
+		System.out.println(hola);
+
+	}
+
 
 }
