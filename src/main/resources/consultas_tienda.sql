@@ -195,6 +195,14 @@
     ON ;
 
 -- 38. Muestra el número total de productos que tiene cada uno de los fabricantes. El listado también debe incluir los fabricantes que no tienen ningún producto. El resultado mostrará dos columnas, una con el nombre del fabricante y otra con el número de productos que tiene. Ordene el resultado descendentemente por el número de productos.
+
+    SELECT fab.nombre, COUNT(prod.codigo) AS cantidad
+    FROM producto prod
+    RIGHT JOIN fabricante fab 
+    ON prod.codigo_fabricante = fab.codigo
+    GROUP BY fab.codigo
+    ORDER BY cantidad DESC;
+
 -- 39. Muestra el precio máximo, precio mínimo y precio medio de los productos de cada uno de los fabricantes. El resultado mostrará el nombre del fabricante junto con los datos que se solicitan. Realízalo en 1 solo stream principal. Utiliza reduce con Double[] como "acumulador".
 -- 40. Muestra el precio máximo, precio mínimo, precio medio y el número total de productos de los fabricantes que tienen un precio medio superior a 200€. No es necesario mostrar el nombre del fabricante, con el código del fabricante es suficiente.
 -- 41. Devuelve un listado con los nombres de los fabricantes que tienen 2 o más productos.

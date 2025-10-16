@@ -883,7 +883,15 @@ Hewlett-Packard              2
 	@Test
 	void test38() {
 		var listFabs = fabRepo.findAll();
-		//TODO
+		
+		var resultado = listFabs.stream()
+								.map(f -> {
+									int numProd = listFabs.stream()
+															.map(x -> x.getProductos())
+															
+								})
+								.toList();
+
 	}
 	
 	/**
