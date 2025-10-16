@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static java.util.Collections.reverseOrder;
@@ -564,22 +563,30 @@ Monitor 27 LED Full HD |199.25190000000003|Asus
 								.map(x -> x.getNombre() + "| " + x.getPrecio() + " | " + x.getFabricante().getNombre())
 								.toList();
 
+		resultado.forEach(System.out::println);
+
 		resultado.stream().forEach(System.out::println);
 
-		Assertions.assertEquals(7, resultado.size());
 
 		/*-------------------------------------- */
 
 		long maxlongNombre = listProds.stream().mapToLong(x -> x.getNombre().length()).max().orElse(0);
 
-		resultado = listProds.stream()
+		String tabla = listProds.stream()
 							.filter(x -> x.getPrecio() >= 180)
 							.sorted(Comparator
 								.comparing(Producto::getPrecio).reversed()
 								.thenComparing(Producto::getNombre))
-							.map(x -> x.getNombre() + IntStream.rangeClosed(1, maxlongNombre) + "| " + x.getPrecio() + " | " + x.getFabricante().getNombre())
-							.toList();
+							.map(x -> 
+								x.getNombre() + " ".repeat((int)maxlongNombre - x.getNombre().length()) + " | " +
+								BigDecimal.valueOf(x.getPrecio()).setScale(2, RoundingMode.HALF_UP) + " | " +
+								x.getFabricante().getNombre()
+							)
+							.collect(Collectors.joining("\n"));
 
+		System.out.println(tabla);
+
+		Assertions.assertEquals(7, resultado.size());
 
 	}
 	
@@ -946,7 +953,22 @@ Hewlett-Packard              2
 	@Test
 	void test45() {
 		var listFabs = fabRepo.findAll();
-		//TODO
+/* 
+		var resultado = listFabs.stream()
+								.map(fab -> 
+									fab.getProductos().stream()
+										.sorted(Comparator.comparing(Producto::getPrecio).reversed())
+										.findFirst()
+								)
+								.sorted(Comparator.comparing(
+									p -> p.map(prod -> prod.getFabricante().getNombre()).orElse("ZZZ"),
+									Comparator.nullsLast(String::compareTo)
+								))
+								.toList();
+
+		resultado.stream().forEach(System.out::println);*/
+
+
 	}
 	
 	/**
