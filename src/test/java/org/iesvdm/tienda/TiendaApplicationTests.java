@@ -15,6 +15,7 @@ import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -22,6 +23,7 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.reverseOrder;
 import static java.util.Comparator.comparing;
+import static org.junit.jupiter.api.DynamicTest.stream;
 
 
 @SpringBootTest
@@ -883,14 +885,22 @@ Hewlett-Packard              2
 	@Test
 	void test38() {
 		var listFabs = fabRepo.findAll();
+
+		record Fabr(String nombre, int cantidad) {};
 		
 		var resultado = listFabs.stream()
-								.map(f -> {
-									int numProd = listFabs.stream()
-															.map(x -> x.getProductos())
-															
-								})
+								.map(fab -> new Fabr( fab.getNombre(), fab.getProductos().size()))
+								.sorted(comparing(Fabr::cantidad).reversed())
 								.toList();
+
+    // Titulo
+    System.out.println(String.format("%-15s %12s", "Fabricante", "#Productos"));
+    System.out.println("-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*");
+
+    // Columnas
+    resultado.forEach(f ->
+        System.out.println(String.format("%-15s %12d", f.nombre(), f.cantidad()))
+    );
 
 	}
 	
@@ -901,8 +911,48 @@ Hewlett-Packard              2
 	 */
 	@Test
 	void test39() {
+
+		record Fabr(String nombre, double max, double min, double media) {}
+
 		var listFabs = fabRepo.findAll();
-		//TODO
+
+		var resultado = listFabs.stream()
+								.map(fab -> {
+									Double[] reduccion = fab.getProductos().stream()
+										.map(x -> x.getPrecio())
+										.reduce(
+											new Double[]{0.0, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, 0.0},
+											(acum, precio) -> {
+											acum[0] += precio;                  
+											acum[1] = Math.min(acum[1], precio);
+											acum[2] = Math.max(acum[2], precio);
+											acum[3]++;                          
+												return acum;
+											},
+											(a, b) -> new Double[]{
+												a[0] + b[0],
+												Math.min(a[1], b[1]),
+												Math.max(a[2], b[2]),
+												a[3] + b[3]
+											}
+										);
+
+									double suma = reduccion[0];
+									double min = reduccion[3] == 0 ? 0 : reduccion[1];
+									double max = reduccion[3] == 0 ? 0 : reduccion[2];
+									double media = reduccion[3] == 0 ? 0 : suma / reduccion[3];
+
+									return new Fabr(fab.getNombre(), max, min, media);
+								})
+								.toList();
+
+		resultado.forEach(x -> System.out.printf(
+			"%-15s | Máx: %-8.2f | Mín: %-8.2f | Media: %-8.2f%n",
+			x.nombre(), x.max(), x.min(), x.media()
+		));
+
+		Assertions.assertEquals(9, resultado.size());
+		
 	}
 	
 	/**
@@ -912,7 +962,24 @@ Hewlett-Packard              2
 	@Test
 	void test40() {
 		var listFabs = fabRepo.findAll();
-		//TODO
+
+		record Fabr(int codigo, double max, double min, double media, long cont) {};
+ 
+		
+		var resultado = listFabs.stream()
+								.map(fab -> {
+										var stats = fab.getProductos().stream().mapToDouble(x -> x.getPrecio()).summaryStatistics();
+										return new Fabr(fab.getCodigo(), stats.getMax(), stats.getMin(), stats.getAverage(), stats.getCount());
+								})
+								.filter(x -> x.media() > 200)
+								.toList();
+
+		resultado.stream().map(x -> String.format(	"%-5d | Máx: %-8.2f | Mín: %-8.2f | Media: %-8.2f | Total: %-3d",
+															x.codigo(), x.max(), x.min(), x.media(), x.cont()))
+							.forEach(System.out::println);
+
+		Assertions.assertEquals(3, resultado.size());
+
 	}
 	
 	/**
@@ -921,7 +988,16 @@ Hewlett-Packard              2
 	@Test
 	void test41() {
 		var listFabs = fabRepo.findAll();
-		//TODO
+		
+		var resultado = listFabs.stream()
+								.filter(f -> f.getProductos().size() >= 2)
+								.map(x -> x.getNombre())
+								.toList();
+
+		resultado.forEach(System.out::println);
+
+		Assertions.assertEquals(4, resultado.size());
+
 	}
 	
 	/**
@@ -931,7 +1007,24 @@ Hewlett-Packard              2
 	@Test
 	void test42() {
 		var listFabs = fabRepo.findAll();
-		//TODO
+
+		record Fab(String nombre, int cont) {}
+		
+		var resultado = listFabs.stream()
+								.map(x -> {
+										var prod = x.getProductos().stream()
+														.filter(a -> a.getPrecio() >= 220)
+														.toList();
+										return new Fab( x.getNombre(), prod.size());
+								})
+								.sorted(comparing(Fab::cont).reversed())
+								.filter(b -> b.cont() > 0)
+								.toList();
+
+		resultado.forEach(System.out::println);
+
+		Assertions.assertEquals(3, resultado.size());
+
 	}
 	
 	/**
@@ -940,17 +1033,47 @@ Hewlett-Packard              2
 	@Test
 	void test43() {
 		var listFabs = fabRepo.findAll();
-		//TODO
+		
+		var resultado = listFabs.stream()
+								.filter(a -> {
+									double precioTotal = a.getProductos().stream().mapToDouble(prod -> prod.getPrecio()).sum();
+									return precioTotal > 1000;
+								})
+								.map(x -> x.getNombre())
+								.toList();
+
+				resultado.forEach(System.out::println);
+
+		Assertions.assertEquals(1, resultado.size());
+
+
 	}
 	
 	/**
-	 * 44. Devuelve un listado con los nombres de los fabricantes donde la suma del precio de todos sus productos es superior a 1000 €
+	 * 44. Devuelve un listado con los nombres de los fabricantes donde la suma del precio de todos sus productos es inferiores a 1000 €
 	 * Ordenado de menor a mayor por cuantía de precio de los productos.
 	 */
 	@Test
 	void test44() {
 		var listFabs = fabRepo.findAll();
-		//TODO	
+		
+				var resultado = listFabs.stream()
+								.filter(a -> {
+									double precioTotal = a.getProductos().stream().mapToDouble(prod -> prod.getPrecio()).sum();
+									return precioTotal < 1000;
+								})
+								.sorted(Comparator.comparing(
+									fab -> fab.getProductos().stream()
+											.mapToDouble(prod -> prod.getPrecio())
+											.sum()
+								))
+								.map(fab -> fab.getNombre())
+								.toList();
+
+		resultado.forEach(System.out::println);
+
+		Assertions.assertEquals(8, resultado.size());
+
 	}
 	
 	/**
@@ -961,20 +1084,35 @@ Hewlett-Packard              2
 	@Test
 	void test45() {
 		var listFabs = fabRepo.findAll();
-/* 
+
 		var resultado = listFabs.stream()
-								.map(fab -> 
-									fab.getProductos().stream()
-										.sorted(Comparator.comparing(Producto::getPrecio).reversed())
-										.findFirst()
+								.filter(x -> !x.getProductos().isEmpty())
+								.map(fab -> fab.getProductos().stream()
+																.sorted(Comparator.comparing(Producto::getPrecio).reversed())
+																.findFirst()
 								)
 								.sorted(Comparator.comparing(
-									p -> p.map(prod -> prod.getFabricante().getNombre()).orElse("ZZZ"),
-									Comparator.nullsLast(String::compareTo)
+																p -> p.map(prod -> prod.getFabricante().getNombre()).orElse("ZZZ"),
+																Comparator.nullsLast(String::compareTo)
 								))
 								.toList();
 
-		resultado.stream().forEach(System.out::println);*/
+		resultado.forEach(optProd -> {
+								Producto p = optProd.orElseGet(() -> {
+										Producto prod = new Producto();
+										prod.setNombre("—");
+										prod.setPrecio(0.0);
+										return prod;
+									});
+
+									System.out.printf("%-35s | %-10.2f | %-10s |%n",
+										p.getNombre(),
+										p.getPrecio(),
+										p.getFabricante() != null ? p.getFabricante().getNombre() : "—"
+									);
+								});
+
+		Assertions.assertEquals(7, resultado.size());
 
 
 	}
@@ -986,7 +1124,30 @@ Hewlett-Packard              2
 	@Test
 	void test46() {
 		var listFabs = fabRepo.findAll();
-		//TODO
+		
+		var resultado = listFabs.stream()
+										.flatMap(fab -> {
+														double media = fab.getProductos().stream()
+																		.mapToDouble(prd -> prd.getPrecio())
+																		.average()
+																		.orElse(0);
+														return fab.getProductos().stream()
+																.filter(prd -> prd.getPrecio() >= media)
+																.map(prd -> new Object[] { fab.getNombre(), prd }); 
+														})
+										.sorted((a, b) -> {
+															int cmpFab = ((String)a[0]).compareTo((String)b[0]);
+															if (cmpFab != 0) return cmpFab;
+															return Double.compare(((Producto)b[1]).getPrecio(), ((Producto)a[1]).getPrecio());
+														})
+										.map(a -> (Producto)a[1])
+										.toList();
+		
+		resultado.stream().forEach(System.out::print);
+
+		Assertions.assertEquals(7, resultado.size());
+			
+
 	}
 
 	@Test

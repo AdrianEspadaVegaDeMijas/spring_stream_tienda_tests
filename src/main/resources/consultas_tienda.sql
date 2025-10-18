@@ -204,10 +204,80 @@
     ORDER BY cantidad DESC;
 
 -- 39. Muestra el precio máximo, precio mínimo y precio medio de los productos de cada uno de los fabricantes. El resultado mostrará el nombre del fabricante junto con los datos que se solicitan. Realízalo en 1 solo stream principal. Utiliza reduce con Double[] como "acumulador".
+
+    SELECT fabr.nombre, MAX(prod.precio), MIN(prod.precio), AVG(prod.precio)
+    FROM fabricante fabr
+    JOIN producto prod
+    ON fabr.codigo = prod.codigo_fabricante
+    GROUP BY fabr.nombre;
+
 -- 40. Muestra el precio máximo, precio mínimo, precio medio y el número total de productos de los fabricantes que tienen un precio medio superior a 200€. No es necesario mostrar el nombre del fabricante, con el código del fabricante es suficiente.
+
+    SELECT fabr.codigo, MAX(prod.precio), MIN(prod.precio), AVG(prod.precio) AS precMedio, COUNT(prod.codigo) 
+    FROM producto prod 
+    JOIN fabricante fabr 
+    ON prod.codigo_fabricante = fabr.codigo
+    GROUP BY fabr.codigo
+    HAVING precMedio > 200;
+
 -- 41. Devuelve un listado con los nombres de los fabricantes que tienen 2 o más productos.
+
+    SELECT fabr.nombre
+    FROM fabricante fabr
+    JOIN producto prd 
+    ON fabr.codigo = prd.codigo_fabricante
+    GROUP BY fabr.codigo
+    HAVING COUNT(prd.codigo) >= 2;
+
 -- 42. Devuelve un listado con los nombres de los fabricantes y el número de productos que tiene cada uno con un precio superior o igual a 220 €. Ordenado de mayor a menor número de productos.
+
+    SELECT fabr.nombre, COUNT(prd.codigo) AS numProd
+    FROM fabricante fabr
+    JOIN producto prd 
+    ON fabr.codigo = prd.codigo_fabricante
+    WHERE prd.precio > 220
+    GROUP BY fabr.codigo
+    ORDER BY numProd DESC;
+
 -- 43. Devuelve un listado con los nombres de los fabricantes donde la suma del precio de todos sus productos es superior a 1000 €
--- 44. Devuelve un listado con los nombres de los fabricantes donde la suma del precio de todos sus productos es superior a 1000 €. Ordenado de menor a mayor por cuantía de precio de los productos.
+
+    SELECT fabr.nombre
+    FROM fabricante fabr
+    JOIN producto prd 
+    ON fabr.codigo = prd.codigo_fabricante
+    GROUP BY fabr.codigo
+    HAVING SUM(prd.precio) > 1000;
+
+-- 44. Devuelve un listado con los nombres de los fabricantes donde la suma del precio de todos sus productos es inferiores a 1000 €. Ordenado de menor a mayor por cuantía de precio de los productos.
+
+    SELECT fabr.nombre, IFNULL(SUM(prd.precio), 0) AS total_precio
+    FROM fabricante fabr
+    LEFT JOIN producto prd 
+    ON fabr.codigo = prd.codigo_fabricante
+    GROUP BY fabr.codigo
+    HAVING IFNULL(SUM(prd.precio), 0) < 1000
+    ORDER BY total_precio ASC;
+
 -- 45. Devuelve un listado con el nombre del producto más caro que tiene cada fabricante. El resultado debe tener tres columnas: nombre del producto, precio y nombre del fabricante. El resultado tiene que estar ordenado alfabéticamente de menor a mayor por el nombre del fabricante.
+
+    SELECT prod.nombre, prod.precio, fabr.nombre
+    FROM fabricante fabr
+    JOIN producto prod 
+    ON fabr.codigo = prod.codigo_fabricante
+    WHERE prod.precio = (SELECT MAX(prd.precio) FROM producto prd WHERE prd.codigo_fabricante = fabr.codigo)
+    ORDER BY fabr.nombre ASC;;
+
+
 -- 46. Devuelve un listado de todos los productos que tienen un precio mayor o igual a la media de todos los productos de su mismo fabricante. Se ordenará por fabricante en orden alfabético ascendente y los productos de cada fabricante tendrán que estar ordenados por precio descendente.
+
+    SELECT prd.nombre, prd.precio, fbr.nombre
+    FROM producto prd
+    JOIN fabricante fbr 
+    ON prd.codigo_fabricante = fbr.codigo
+    WHERE prd.precio >= (
+            SELECT AVG(prd2.precio)  
+            FROM producto prd2
+            WHERE prd2.codigo_fabricante = fbr.codigo)
+    ORDER BY fbr.nombre, prd.precio;
+
+
